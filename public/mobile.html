@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=1, user-scalable=0"/>
+		<title>Document</title>
+		<style>
+			#gameboy{
+				position: relative;
+			    height: 100vh;
+			    margin-top:20px;
+			    overflow-y:hidden;
+			}
+
+			#up_key{
+				width:100px;
+				position:absolute;
+				top:10px;
+				left:20px;
+			}
+			
+			#down_key{
+				width:100px;
+				position:absolute;
+				top:180px;
+				left:20px;
+			}
+
+			#fire_1{
+				background: url('Assets/PowersSpriteSheet.png') no-repeat 0 -10px;
+				width: 133px;
+				height: 90px;
+				position:absolute;
+    			left: 300px;
+			}
+
+			#fire_2{
+				background: url('Assets/PowersSpriteSheet.png') no-repeat -164px -122px;
+				width: 88px;
+				height: 112px;
+				position:absolute;
+				left: 500px;
+			}
+
+			#fire_3{
+				background: url('Assets/PowersSpriteSheet.png') no-repeat -266px -106px;
+				width: 161px;
+				height: 121px;
+				position:absolute;
+				left: 650px;
+			}
+
+
+			#water_1{
+				background: url('Assets/PowersSpriteSheet.png') no-repeat -239px -22px;
+				width: 126px;
+				height: 70px;
+				position:absolute;
+				top: 200px;
+    			left: 300px;
+			}
+
+			#water_2{
+				background: url('Assets/PowersSpriteSheet.png') no-repeat -63px -420px;
+				width: 48px;
+				height: 37px;
+				position:absolute;
+				left: 540px;
+			    -ms-transform: scale(3, 3);
+			    -webkit-transform: scale(3, 3);
+			    transform: scale(3, 3);
+			    top: 200px;
+			}
+
+			#water_3{
+				background: url('Assets/PowersSpriteSheet.png') no-repeat -342px -257px;
+				width: 79px;
+				height: 61px;
+				position:absolute;
+				top: 189px;
+			    left: 700px;
+			    -ms-transform: scale(2, 2);
+			    -webkit-transform: scale(2, 2);
+			    transform: scale(2, 2);
+			}
+
+			.faded{
+    			-webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    			filter: grayscale(100%);
+			}
+
+		</style>
+	</head>
+	<body>
+		<p style="text-align:center;font-size:24px">Go Landscape. Gameboy ID - <span id="dasecret"></span></p>
+		<div id="gameboy">
+			<div class="action_btn " id="up_key"><img src="Assets/arrow_up.png" width="100%" alt=""></div>
+			<div class="action_btn" id="down_key"><img src="Assets/arrow_down.png" width="100%" alt=""></div>
+
+			<div class="action_btn" id="fire_1"></div>
+			<div class="action_btn greater_power faded" id="fire_2"></div>
+			<div class="action_btn greater_power faded" id="fire_3"></div>
+
+			<div class="action_btn" id="water_1"></div>
+			<div class="action_btn greater_power faded" id="water_2"></div>
+			<div class="action_btn greater_power faded" id="water_3"></div>
+		</div>
+
+		<!-- Including the JS libraries that we use -->
+		<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+
+		<!-- Socket.io library -->
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			$(function(){
+
+				var secret = randomString(4, '0123456789');
+    			$('#dasecret').text(secret);
+
+				// Connect to the socket
+				var socket = io();
+
+				$('.action_btn').on("contextmenu",function(){
+       				return false;
+    			}); 
+
+				$('.action_btn').click(function(){
+					var action_btn = $(this).attr('id');
+					if($(this).hasClass('greater_power')){
+						if(!$(this).hasClass('faded')){
+							socket.emit('action_btn_data', {
+								action_btn: action_btn,
+								key: secret
+							});
+							if($(this).hasClass('greater_power')){
+								$(this).addClass('faded');
+							};
+						}
+					}else{
+						socket.emit('action_btn_data', {
+							action_btn: action_btn,
+							key: secret
+						});
+						if($(this).hasClass('greater_power')){
+							$(this).addClass('faded');
+						};
+					}
+				});
+
+				socket.on('action_btn_status', function(data){
+					if(secret == data.key){
+						action_btn_data = data.action_status;
+						$('#'+action_btn_data).removeClass('faded');
+					}
+				});
+
+			});
+
+			function randomString(length, chars) {
+		        var result = '';
+		        for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+		        return result;
+		    }
+		</script>
+	</body>
+</html>
